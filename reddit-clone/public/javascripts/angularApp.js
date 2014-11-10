@@ -3,7 +3,12 @@ angular.module('myNews', ['ui.router']).config(['$stateProvider', 'urlRouteProvi
 		.state('home', {
 			url: '/home',
 			templateUrl: '/home.html',
-			controller: 'MainCtrl'
+			controller: 'MainCtrl',
+			resolve: {
+				postPromist: ['posts', function(posts) {
+					return posts.getAll();
+				}]
+			}
 		})
 		.state('posts', {
   			url: '/posts/{id}',
@@ -14,11 +19,17 @@ angular.module('myNews', ['ui.router']).config(['$stateProvider', 'urlRouteProvi
 		$urlRouteProvider.otherwise('home');
 }])
 
-.factory('posts', [function(){
+.factory('posts', ['http'], [function($http){
   var o = {
     posts: []
   };
   return o;
+
+  o.getAll = function() {
+  	return $http.get('/posts').success(function(data) {
+  		angular.copy(data, o.posts);
+  	});
+  };
 }])
 .controller('MainCtrl', ['$scope', 'posts', function($scope, posts) {
 	$scope.posts = posts.posts;
